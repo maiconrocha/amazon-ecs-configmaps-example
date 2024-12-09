@@ -12,7 +12,7 @@ to pass back in the environment specific data back at runtime.
 Many workloads also contain configuration files which are also environment
 specific. Following the guidance above, we want to remove these environment
 specific configuration files from our container image and pass them back in at
-runtime. Depending on your container orchestrator, it may have a fist class
+runtime. Depending on your container orchestrator, it may have a first class
 configuration file resource such as Kubernetes
 [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/) or
 Docker Swarm [Configs](https://docs.docker.com/engine/swarm/configs/). Amazon
@@ -88,8 +88,8 @@ $ docker push $IMAGE_URI:$IMAGE_TAG
 
 ### Example
 
-The examples repository containers a simple nginx example. The directory
-containers a cloudformation template with a Task Definition, as well as an
+The examples repository contains a simple nginx example. The directory
+contains a cloudformation template with a Task Definition, as well as an
 `index.html` file. In the walk through we will deploy an nginx container to ECS
 using the upstream nginx image, we will also deploy a second container in the
 ECS Task, the init container. The init container will download the `index.html`
@@ -102,8 +102,8 @@ from Amazon S3 and place it in the nginx container at runtime.
 When running the below the commands, ensure you have the container image and tag
 Exported in your shell from the previous step. These instructions also assume
 you have an existing VPC, Subnet, Security Group and ECS Cluster in your AWS
-account. Its worth nothing these instructions are not deploying a highly
-available, fault tolerant web server, it is simply highlighting the
+account. It's worth nothing these instructions are not deploying a highly
+available, fault tolerant web server; it is simply highlighting the
 functionality of the init container.
 
 ```bash
