@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Nginx Init Example
+Description: Apache Init Example
 
 Parameters:
   InitImage:
@@ -91,9 +91,9 @@ Resources:
             - Name: 'S3_BUCKET_FILE_1'
               Value: !Ref S3Bucket
             - Name: 'SRC_FILE_PATH_FILE_1'
-              Value: 'index.html'
+              Value: 'httpd.conf'
             - Name: 'DEST_FILE_PATH_FILE_1'
-              Value: '/data/index.html'
+              Value: '/data/httpd.conf'
           MountPoints:
             - ContainerPath: '/data'
               SourceVolume: 'staticontent'
@@ -103,8 +103,8 @@ Resources:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: 'init'
-        - Name: 'nginx'
-          Image: public.ecr.aws/docker/library/nginx:latest
+        - Name: 'apache'
+          Image: httpd:2.4
           DependsOn:
             - ContainerName: init
               Condition: SUCCESS
@@ -113,7 +113,7 @@ Resources:
             - ContainerPort: 80
               Protocol: 'TCP'
           MountPoints:
-            - ContainerPath: '/usr/share/nginx/html'
+            - ContainerPath: '/usr/local/apache2/conf/'
               ReadOnly: true
               SourceVolume: 'staticontent'
           LogConfiguration:
@@ -121,7 +121,7 @@ Resources:
             Options:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref 'AWS::Region'
-              awslogs-stream-prefix: 'nginx'
+              awslogs-stream-prefix: 'apache'
 
       Volumes:
         - Name: 'staticontent'

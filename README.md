@@ -54,10 +54,10 @@ configuration file:
 
 * `S3_BUCKET_FILE_*` - The S3 Bucket that contains the configuration file.
 * `SRC_FILE_PATH_FILE_*` - The path within the S3 bucket to locate the
-  configuration file `/prodfiles/nginx.conf`.
+  configuration file `/prodfiles/httpd.conf`.
 * `DEST_FILE_PATH_FILE_* `- The path within the init container you want to write
   the configuration file too. For example if the shared local volume is mounted
-  to `/data` then this value could be `/data/nginx.conf`.
+  to `/data` then this value could be `/data/httpd.conf`.
 
 This same init container can be used for multiple configuration files, the
 wildcard should be replaced with an integer for each configuration file you want
@@ -88,12 +88,12 @@ $ docker push $IMAGE_URI:$IMAGE_TAG
 
 ### Example
 
-The examples repository contains a simple nginx example. The directory
+The examples repository contains a simple apache example. The directory
 contains a cloudformation template with a Task Definition, as well as an
-`index.html` file. In the walk through we will deploy an nginx container to ECS
-using the upstream nginx image, we will also deploy a second container in the
+`index.html` file. In the walk through we will deploy an apache container to ECS
+using the upstream apache image, we will also deploy a second container in the
 ECS Task, the init container. The init container will download the `index.html`
-from Amazon S3 and place it in the nginx container at runtime.
+from Amazon S3 and place it in the apache container at runtime.
 
 > Remember this index.html file could be any static configuration file that you
 > want to pass into a workload at runtime. The example is simplistic by design,
@@ -111,7 +111,7 @@ functionality of the init container.
 $ cd ../
 $ aws cloudformation create-stack \
   --stack-name ecs-configmaps \
-  --template-body file://examples/nginx.cloudformation.yaml \
+  --template-body file://examples/apache.cloudformation.yaml \
   --capabilities CAPABILITY_IAM \
   --parameters \
      ParameterKey=InitImage,ParameterValue="${IMAGE_URI}:${IMAGE_TAG}"
@@ -119,7 +119,7 @@ $ aws cloudformation create-stack \
 # Ensure to replace the S3 Bucket created by the Cloudformation Template
 $ S3_BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name ecs-configmaps --query "Stacks[0].Outputs[?OutputKey=='S3Bucket'].OutputValue" --output text)
 $ aws s3 cp \
-  examples/index.html \
+  examples/httpd.conf \
   s3://$S3_BUCKET_NAME/
 
 # To then run the task you need to pass back in an existing resources.
@@ -131,16 +131,17 @@ $ aws ecs run-task \
   --cluster $ECS_CLUSTER \
   --task-definition ecs-configmaps-taskdef  \
   --launch-type="FARGATE" \
-  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp":"ENABLED", "securityGroups": ["'$SECURITY_GROUP_ID'"], "subnets": ["'$SUBNET_ID'"]}}'
+  --enable-execute-command \
+  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp":"DISABLED", "securityGroups": ["'$SECURITY_GROUP_ID'"], "subnets": ["'$SUBNET_ID'"]}}'
 ```
 
 To verify the init container worked successfully, log into the AWS Console and
 browse to the ECS Console. Within your ECS Cluster, select Tasks, and select the
 ecs-configmap task you just deployed.
 
-Here you should see that the nginx container is running and the init container
+Here you should see that the apache container is running and the init container
 has STOPPED. This is working as designed because once the init container has
-downloaded the configuration files, it stops and the nginx container starts.
+downloaded the configuration files, it stops and the apache container starts.
 
 !["Architecture"](images/containers.png)
 
@@ -153,7 +154,7 @@ shared local volume.
 Finally, depending on the networking configuration of your VPC, if you have used
 a public subnet when deploying the Task, with a Rule on the Security Group
 allowing access to port 80 from your IP, you should be able to browse to the
-nginx Task and see your static content.
+apache Task and see your static content.
 
 !["Architecture"](images/homepage.png)
 
